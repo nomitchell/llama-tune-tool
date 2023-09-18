@@ -7,7 +7,7 @@ import sys
 for i in range(1, 15):
     getattr(self, 'lineEdit_%s' % i).setReadOnly(True)
 
-
+addition
 continue from this link https://stackoverflow.com/questions/68453805/how-to-pass-values-from-one-window-to-another-pyqt
 '''
 
