@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import QSize, Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QHBoxLayout, QWidget, QPlainTextEdit, QVBoxLayout, QAbstractItemView
 
 import sys
@@ -12,14 +12,18 @@ continue from this link https://stackoverflow.com/questions/68453805/how-to-pass
 '''
 
 class editWindow(QWidget):
+    
+    confirmClicked = pyqtSignal(list)
 
-    def __init__(self, instance):
-        QMainWindow.__init__(self)
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
         layout = QVBoxLayout()
         self.editInput = QPlainTextEdit()
         self.editOutput = QPlainTextEdit()
-        self.editInput.setPlainText(instance.table.item(instance.currentRow, 0))
-        self.editOutput.setPlainText(instance.table.item(instance.currentRow, 1))
+        self.editInput.setPlainText(self.parent.table.item(self.parent.currentRow, 0).text())
+        self.editOutput.setPlainText(self.parent.table.item(self.parent.currentRow, 1).text())
+        print(self.parent.table.item(self.parent.currentRow, 0).text())
 
         self.confirmButton = QPushButton('Confirm')
         self.confirmButton.clicked.connect(self.updateText)
@@ -27,14 +31,16 @@ class editWindow(QWidget):
         layout.addWidget(self.editOutput)
         layout.addWidget(self.confirmButton)
         self.setLayout(layout)
+        #self.currentRow.connect(self.updateText)
 
     def updateText(self, instance):
-        instance.table.setItem(instance.currentRow, 0, QTableWidgetItem(self.editInput.toPlainText()))
-        instance.table.setItem(instance.currentRow, 1, QTableWidgetItem(self.editInput.toPlainText()))
+        self.confirmClicked.emit([self.editInput.toPlainText(), self.editOutput.toPlainText(), self.parent.currentRow])
+        
 
 class MainWindow(QMainWindow):
+    
     def __init__(self):
-        QMainWindow.__init__(self)
+        super().__init__()
 
         self.setWindowTitle("Llama Fine Tune Tool")
         self.setMinimumSize(1000, 300)
@@ -72,7 +78,8 @@ class MainWindow(QMainWindow):
 
     def editButtonClicked(self):
         self.currentRow = self.table.currentRow()
-        self.w = editWindow()
+        self.w = editWindow(parent=self)
+        self.w.confirmClicked.connect(self.updateTableText)
         self.w.show()
 
     def deleteButtonClicked(self):
@@ -92,6 +99,13 @@ class MainWindow(QMainWindow):
         self.deleteButton = QPushButton('Delete')
         self.deleteButton.clicked.connect(self.deleteButtonClicked)
         self.table.setCellWidget(index,3,self.deleteButton)
+
+        print(self.table.item(index, 0).text())
+
+    def updateTableText(self, text):
+        self.table.setItem(text[2], 0, QTableWidgetItem(text[0]))
+        self.table.setItem(text[2], 1, QTableWidgetItem(text[1]))
+        
 
 # Remove the sys and sys.argv replace [] if I dont end up using CLA
 app = QApplication(sys.argv)
