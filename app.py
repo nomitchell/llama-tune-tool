@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         self.w.close()
 
     def makeCSV(self):
-        fileName = QFileDialog.getSaveFileName(self, 'Save file', 'c:\\Documents',"CSV file (*.csv)")
+        fileName = QFileDialog.getSaveFileName(self, 'Save file', 'c:\\',"CSV file (*.csv)")
         try:
             f = open(fileName[0], 'w')
             for index in range(self.table.rowCount()):
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
             pass
 
     def openFile(self):
-        fileName = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\Documents','CSV file (*.csv)')
+        fileName = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\','CSV file (*.csv)')
         while self.table.rowCount() > 0:
             self.table.removeRow(0)
 
