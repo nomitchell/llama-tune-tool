@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QSize, Qt, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QHBoxLayout, QWidget, QPlainTextEdit, QVBoxLayout, QAbstractItemView
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QHBoxLayout, QWidget, QPlainTextEdit, QVBoxLayout, QFileDialog
 
 import sys
 
@@ -36,6 +36,7 @@ class editWindow(QWidget):
     def updateText(self, instance):
         self.confirmClicked.emit([self.editInput.toPlainText(), self.editOutput.toPlainText(), self.parent.currentRow])
         
+        
 
 class MainWindow(QMainWindow):
     
@@ -47,6 +48,7 @@ class MainWindow(QMainWindow):
     
         layout = QHBoxLayout()
         layout2 = QVBoxLayout()
+        layout3 = QHBoxLayout()
 
         self.table = QTableWidget()
         self.table.setMinimumWidth(350)
@@ -61,8 +63,13 @@ class MainWindow(QMainWindow):
         self.appendButton.clicked.connect(self.getText)
         self.appendButton.setMinimumHeight(50)
 
-        self.submitButton = QPushButton('Finalize')
-        self.submitButton.setMinimumHeight(50)
+        self.submitButton = QPushButton('Save')
+        self.submitButton.clicked.connect(self.makeCSV)
+        self.submitButton.setMinimumHeight(30)
+
+        self.openButton = QPushButton('Open')
+        self.openButton.clicked.connect(self.openFile)
+        self.openButton.setMinimumHeight(30)
 
         layout.addWidget(self.table)
         layout.addLayout(layout2)
@@ -70,7 +77,10 @@ class MainWindow(QMainWindow):
         layout2.addWidget(self.textInput)
         layout2.addWidget(self.textOutput)
         layout2.addWidget(self.appendButton)
-        layout2.addWidget(self.submitButton)
+        layout2.addLayout(layout3)
+
+        layout3.addWidget(self.submitButton)
+        layout3.addWidget(self.openButton)
         
         widget = QWidget()
         widget.setLayout(layout)
@@ -89,8 +99,8 @@ class MainWindow(QMainWindow):
         index = self.table.rowCount()
         
         self.table.insertRow(self.table.rowCount())
-        self.table.setItem(index, 0, QTableWidgetItem(self.textInput.toPlainText()))
-        self.table.setItem(index, 1, QTableWidgetItem(self.textOutput.toPlainText()))
+        self.table.setItem(index, 0, QTableWidgetItem(self.textInput.toPlainText().replace(",", "")))
+        self.table.setItem(index, 1, QTableWidgetItem(self.textOutput.toPlainText().replace(",", "")))
         
         self.editButton = QPushButton('Edit')
         self.editButton.clicked.connect(self.editButtonClicked)
@@ -100,11 +110,37 @@ class MainWindow(QMainWindow):
         self.deleteButton.clicked.connect(self.deleteButtonClicked)
         self.table.setCellWidget(index,3,self.deleteButton)
 
-        print(self.table.item(index, 0).text())
+        self.textInput.setPlainText("")
+        self.textOutput.setPlainText("")
 
     def updateTableText(self, text):
-        self.table.setItem(text[2], 0, QTableWidgetItem(text[0]))
-        self.table.setItem(text[2], 1, QTableWidgetItem(text[1]))
+        self.table.setItem(text[2], 0, QTableWidgetItem(text[0].replace(",", "")))
+        self.table.setItem(text[2], 1, QTableWidgetItem(text[1].replace(",", "")))
+        self.w.close()
+
+    def makeCSV(self):
+        fileName = QFileDialog.getSaveFileName(self, 'Save file', 'c:\\Documents',"CSV file (*.csv)")
+        try:
+            f = open(fileName[0], 'w')
+            for index in range(self.table.rowCount()):
+                f.write(self.table.item(index, 0).text() + "," + self.table.item(index, 1).text() + "\n")
+            f.close()
+            print("file written at", fileName)
+        except:
+            pass
+
+    def openFile(self):
+        fileName = QFileDialog.getOpenFileName(self, 'Open file', 'c:\\Documents','CSV file (*.csv)')
+        while self.table.rowCount() > 0:
+            self.table.removeRow(0)
+
+        f = open(fileName[0], 'r')
+        for index, row in enumerate(f):
+            self.table.insertRow(self.table.rowCount())
+            entries = row.split(",")
+            self.table.setItem(index, 0, QTableWidgetItem(entries[0].replace(",", "")))
+            self.table.setItem(index, 1, QTableWidgetItem(entries[1].replace("," or "\n", "")))
+        f.close()
         
 
 # Remove the sys and sys.argv replace [] if I dont end up using CLA
