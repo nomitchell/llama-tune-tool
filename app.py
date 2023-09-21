@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         index = self.table.rowCount()
         
         inputText = self.textInput.toPlainText().replace(",", "").replace("\n", " ")
-        outputText = self.textInput.toPlainText().replace(",", "").replace("\n", " ")
+        outputText = self.textOutput.toPlainText().replace(",", "").replace("\n", " ")
 
         self.table.insertRow(self.table.rowCount())
         self.table.setItem(index, 0, QTableWidgetItem(inputText))
